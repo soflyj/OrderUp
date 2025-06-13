@@ -75,6 +75,11 @@ Then apply migrations:
 dotnet ef database update --project OrderUp.Infrastructure
 ```
 
+```
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
 ### 3. Build and Run
 
 ```
