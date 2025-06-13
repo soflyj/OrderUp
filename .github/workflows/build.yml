@@ -1,0 +1,91 @@
+name: CI - Build and Test OrderUp
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Your_password123
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "exit 0" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      DOTNET_VERSION: '7.0.x'
+      NODE_VERSION: '18.x'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Cache .NET packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: ${{ runner.os }}-nuget-
+
+    - name: Restore .NET dependencies
+      run: dotnet restore
+
+    - name: Build .NET Solution
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run Unit Tests
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish .NET API
+      run: dotnet publish OrderUp.API/OrderUp.API.csproj -c Release -o publish
+      if: success()
+
+    - name: Archive published API
+      uses: actions/upload-artifact@v3
+      with:
+        name: orderup-api
+        path: publish/
+
+    - name: Install Angular CLI
+      run: npm install -g @angular/cli
+
+    - name: Install frontend dependencies
+      working-directory: OrderUp.UI
+      run: npm ci
+
+    - name: Build Angular project
+      working-directory: OrderUp.UI
+      run: ng build --configuration production
+
+    - name: Apply EF Core Migrations to SQL Server
+      run: dotnet ef database update --project OrderUp.Infrastructure --startup-project OrderUp.API
+      env:
+        ConnectionStrings__DefaultConnection: ${{ secrets.SQL_CONNECTION_STRING }}
+
+    - name: FTP Deploy Published API
+      uses: SamKirkland/FTP-Deploy-Action@v4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /public_html/api/          # Update with your target path
+        local-dir: publish/
