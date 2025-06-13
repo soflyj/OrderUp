@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OrderUp.Application.Interfaces;
 using OrderUp.Application.Services;
+using OrderUp.Infrastructure;
 using OrderUp.Infrastructure.Persistence;
 using OrderUp.Infrastructure.Repositories;
 using OrderUp.Infrastructure.Services;
@@ -23,6 +24,8 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpS
 // Register services
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // JWT authentication setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
