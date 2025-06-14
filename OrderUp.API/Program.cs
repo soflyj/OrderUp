@@ -22,7 +22,8 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpS
 
 // Register services
 builder.Services.AddTransient<IAuthService, AuthService>();
-builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddTransient<IInvoiceService, InvoiceService>();
 
 // JWT authentication setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
