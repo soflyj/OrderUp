@@ -10,5 +10,7 @@ namespace OrderUp.Application.Interfaces
     Task<ProductDto> CreateProductAsync(ProductDto dto);
     Task<ProductDto> UpdateProductAsync(ProductDto dto);
     Task DeleteProductAsync(Guid id);
+    Task<List<ProductDto>> GetAllProductsAsync(Guid vendorId);
+    Task<ProductDto?> GetProductByIdAsync(Guid id);
   }
 }

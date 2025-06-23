@@ -24,11 +24,6 @@ public class UserService : IUserService
         return await _userRepository.GetByEmailAsync(email);
     }
 
-    public async Task<IEnumerable<User>> GetUsersByTenantAsync(Guid tenantId)
-    {
-        return await _userRepository.GetUsersByTenantAsync(tenantId);
-    }
-
     public async Task RegisterUserAsync(User user, string password)
     {
         user.PasswordHash = HashPassword(password);

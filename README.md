@@ -1,6 +1,6 @@
 ﻿# OrderUp
 
-**OrderUp** is a multi-tenant .NET Web API designed to support bakeries (tenants), with secure user management, order processing, activity logging, and CI/CD deployment support. Built with Clean Architecture, it is modular, testable, and scalable.
+**OrderUp** is a multi-tenant .NET Web API designed to support Vendories (tenants), with secure user management, order processing, activity logging, and CI/CD deployment support. Built with Clean Architecture, it is modular, testable, and scalable.
 
 ---
 

@@ -17,49 +17,12 @@ namespace OrderUp.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("OrderUp.Domain.Entities.LogEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AfterValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BeforeValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PerformedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TableName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RequestLogs");
-                });
-
-            modelBuilder.Entity("OrderUp.Domain.Entities.Tenant", b =>
+            modelBuilder.Entity("OrderUp.Domain.Entities.GeneralInventoryItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,19 +30,225 @@ namespace OrderUp.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("VendorTypeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tenants");
+                    b.HasIndex("VendorTypeId");
+
+                    b.ToTable("GeneralInventoryItems");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-                            Name = "DefaultTenant"
+                            Id = new Guid("71f2629e-25a2-4f94-a6a3-8a5241d400e6"),
+                            Name = "Flour",
+                            VendorTypeId = new Guid("fbb3e66d-76f6-4c7a-81e9-8796618c5f68")
+                        },
+                        new
+                        {
+                            Id = new Guid("8b189732-d5a2-4058-a602-4b60cf005f4a"),
+                            Name = "Sugar",
+                            VendorTypeId = new Guid("fbb3e66d-76f6-4c7a-81e9-8796618c5f68")
+                        },
+                        new
+                        {
+                            Id = new Guid("fdb62b10-435c-4af9-b60e-0ea935498d6d"),
+                            Name = "Shampoo",
+                            VendorTypeId = new Guid("77424ac7-16a2-4074-8e74-a0ab54ff8b64")
+                        },
+                        new
+                        {
+                            Id = new Guid("1b820d50-e679-4d00-9df9-46481a7b5e49"),
+                            Name = "Brush",
+                            VendorTypeId = new Guid("77424ac7-16a2-4074-8e74-a0ab54ff8b64")
                         });
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.InventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("InventoryItems");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("IssuedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NeededByDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.OrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.ProductImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.ProductInventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("IngredientName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("QuantityRequired")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductInventoryItems");
                 });
 
             modelBuilder.Entity("OrderUp.Domain.Entities.User", b =>
@@ -96,7 +265,6 @@ namespace OrderUp.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EmailConfirmationToken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsEmailConfirmed")
@@ -109,9 +277,6 @@ namespace OrderUp.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -119,42 +284,217 @@ namespace OrderUp.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("VendorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("TenantId");
+                    b.HasIndex("VendorId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Vendor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VendorTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorTypeId");
+
+                    b.ToTable("Vendors");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.VendorType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VendorTypes");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7e841df0-aadd-4f7c-9d74-3d5bc43dd869"),
-                            CreatedAt = new DateTime(2025, 6, 1, 10, 30, 45, 0, DateTimeKind.Unspecified),
-                            Email = "jar.ninja.nas@gmail.com",
-                            EmailConfirmationToken = "TS3dagLkwuCxiIEdTl0cQxVZ3HdcDGtWZBBwe4gm94zyjq4ZimFzdSXZvRRzGqlO",
-                            IsEmailConfirmed = true,
-                            PasswordHash = "$2a$04$WkevAwqPEYqqXCOYJ4bxReOBihf7ZfwephUTyRfjwMr43bssuzxpm",
-                            Role = 1,
-                            TenantId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-                            UpdatedAt = new DateTime(2025, 6, 1, 10, 30, 45, 0, DateTimeKind.Unspecified),
-                            Username = "Stevie"
+                            Id = new Guid("fbb3e66d-76f6-4c7a-81e9-8796618c5f68"),
+                            Name = "Baker"
+                        },
+                        new
+                        {
+                            Id = new Guid("77424ac7-16a2-4074-8e74-a0ab54ff8b64"),
+                            Name = "PetGroomer"
                         });
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.GeneralInventoryItem", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.VendorType", "VendorType")
+                        .WithMany("GeneralInventoryItems")
+                        .HasForeignKey("VendorTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("VendorType");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.InventoryItem", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Vendor", "Vendor")
+                        .WithMany("InventoryItems")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Invoice", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Order", "Order")
+                        .WithOne("Invoice")
+                        .HasForeignKey("OrderUp.Domain.Entities.Invoice", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Order", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Vendor", "Vendor")
+                        .WithMany("Orders")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.OrderItem", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OrderUp.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Vendor", "Vendor")
+                        .WithMany("Products")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.ProductImage", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.ProductInventoryItem", b =>
+                {
+                    b.HasOne("OrderUp.Domain.Entities.Product", "Product")
+                        .WithMany("RequiredInventory")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("OrderUp.Domain.Entities.User", b =>
                 {
-                    b.HasOne("OrderUp.Domain.Entities.Tenant", "Tenant")
+                    b.HasOne("OrderUp.Domain.Entities.Vendor", "Vendor")
                         .WithMany("Users")
-                        .HasForeignKey("TenantId")
+                        .HasForeignKey("VendorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Tenant");
+                    b.Navigation("Vendor");
                 });
 
-            modelBuilder.Entity("OrderUp.Domain.Entities.Tenant", b =>
+            modelBuilder.Entity("OrderUp.Domain.Entities.Vendor", b =>
                 {
+                    b.HasOne("OrderUp.Domain.Entities.VendorType", "VendorType")
+                        .WithMany("Vendors")
+                        .HasForeignKey("VendorTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("VendorType");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("Invoice");
+
+                    b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("RequiredInventory");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.Vendor", b =>
+                {
+                    b.Navigation("InventoryItems");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Products");
+
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("OrderUp.Domain.Entities.VendorType", b =>
+                {
+                    b.Navigation("GeneralInventoryItems");
+
+                    b.Navigation("Vendors");
                 });
 #pragma warning restore 612, 618
         }

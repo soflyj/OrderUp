@@ -1,13 +1,12 @@
-﻿using System;
+﻿namespace OrderUp.Domain.Entities;
 
-namespace OrderUp.Domain.Entities
+public class InventoryItem
 {
-  public class InventoryItem : BaseEntity
-  {
-    public Guid BakerId { get; set; }
-    public Guid IngredientId { get; set; }
-    public double Quantity { get; set; }
-    public Baker Baker { get; set; }
-    public Ingredient Ingredient { get; set; }
-  }
+  public Guid Id { get; set; }
+  public Guid VendorId { get; set; }
+  public Vendor Vendor { get; set; } = null!;
+
+  public string Name { get; set; } = null!;
+  public int Quantity { get; set; }
+  public decimal Cost { get; set; }
 }

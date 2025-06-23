@@ -5,12 +5,10 @@ namespace OrderUp.Application.Interfaces
 {
   public interface IInventoryService
   {
-    Task<List<IngredientDto>> GetIngredientsAsync(Guid bakerId);
-    Task AddIngredientAsync(Guid bakerId, IngredientDto ingredient);
-    Task UpdateIngredientAsync(Guid bakerId, IngredientDto ingredient);
-    Task DeleteIngredientAsync(Guid bakerId, Guid ingredientId);
-
-    Task<List<InventoryItemDto>> GetInventoryAsync(Guid bakerId);
-    Task UpdateInventoryItemAsync(Guid bakerId, InventoryItemDto item);
+    Task<List<InventoryItemDto>> GetInventoryAsync(Guid vendorId);
+    Task<InventoryItemDto?> GetInventoryItemAsync(Guid vendorId, Guid itemId);
+    Task AddInventoryItemAsync(Guid vendorId, InventoryItemDto item);
+    Task UpdateInventoryItemAsync(Guid vendorId, InventoryItemDto item);
+    Task DeleteInventoryItemAsync(Guid vendorId, Guid itemId);
   }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// File: OrderUp.Infrastructure/Persistence/AppDbContext.cs
+using Microsoft.EntityFrameworkCore;
 using OrderUp.Domain.Entities;
 
 namespace OrderUp.Infrastructure.Persistence
@@ -7,75 +8,84 @@ namespace OrderUp.Infrastructure.Persistence
   {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<User> Users { get; set; }
-    public DbSet<Tenant> Tenants { get; set; }
-
-    public DbSet<Baker> Bakers { get; set; }
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Ingredient> Ingredients { get; set; }
-    public DbSet<InventoryItem> Inventories { get; set; }
-
-    // Assuming RequestLog is your logging entity
-    public DbSet<LogEntry> RequestLogs { get; set; }
-
+    public DbSet<VendorType> VendorTypes => Set<VendorType>();
+    public DbSet<Vendor> Vendors => Set<Vendor>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<ProductInventoryItem> ProductInventoryItems => Set<ProductInventoryItem>();
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+    public DbSet<GeneralInventoryItem> GeneralInventoryItems => Set<GeneralInventoryItem>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
 
-      // Configure Tenant
-      modelBuilder.Entity<Tenant>(entity =>
-      {
-        entity.HasKey(t => t.Id);
-        entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
-      });
-
-      // Configure User
-      modelBuilder.Entity<User>()
-         .HasOne(u => u.Tenant)
-         .WithMany(t => t.Users)
-         .HasForeignKey(u => u.TenantId)
-         .OnDelete(DeleteBehavior.Restrict); // or .NoAction in EF Core 5+
-
-      // Configure RequestLog
-      modelBuilder.Entity<LogEntry>(entity =>
-      {
-        entity.HasKey(r => r.Id);
-        entity.Property(r => r.TableName).IsRequired().HasMaxLength(100);
-        entity.Property(r => r.RecordId).IsRequired();
-      });
-
-      // 🔁 Global DeleteBehavior setting
-      foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+      // Disable cascade delete globally to prevent cycle issues
+      foreach (var relationship in modelBuilder.Model
+                   .GetEntityTypes()
                    .SelectMany(e => e.GetForeignKeys()))
       {
         relationship.DeleteBehavior = DeleteBehavior.Restrict;
       }
 
-      modelBuilder.Entity<Tenant>().HasData(
-          new Tenant
-          {
-            Id = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-            Name = "DefaultTenant"
-          }
+      // Fix for decimal properties
+      modelBuilder.Entity<Product>()
+          .Property(p => p.Price)
+          .HasPrecision(18, 2); // Up to 999,999,999,999.99
+
+      modelBuilder.Entity<InventoryItem>()
+          .Property(i => i.Cost)
+          .HasPrecision(18, 2);
+
+      // ProductInventoryItem (join table)
+      modelBuilder.Entity<ProductInventoryItem>()
+          .HasOne(p => p.Product)
+          .WithMany(p => p.RequiredInventory)
+          .HasForeignKey(p => p.ProductId);
+
+      // OrderItem
+      modelBuilder.Entity<OrderItem>()
+          .HasOne(oi => oi.Order)
+          .WithMany(o => o.OrderItems)
+          .HasForeignKey(oi => oi.OrderId);
+
+      modelBuilder.Entity<OrderItem>()
+          .HasOne(oi => oi.Product)
+          .WithMany()
+          .HasForeignKey(oi => oi.ProductId);
+
+      // ProductImage
+      modelBuilder.Entity<ProductImage>()
+          .HasOne(pi => pi.Product)
+          .WithMany(p => p.Images)
+          .HasForeignKey(pi => pi.ProductId);
+
+      // Invoice
+      modelBuilder.Entity<Invoice>()
+          .HasOne(i => i.Order)
+          .WithOne(o => o.Invoice)
+          .HasForeignKey<Invoice>(i => i.OrderId);
+
+      // Seeding VendorTypes
+      var bakerId = Guid.Parse("fbb3e66d-76f6-4c7a-81e9-8796618c5f68");
+      var groomerId = Guid.Parse("77424ac7-16a2-4074-8e74-a0ab54ff8b64");
+
+      modelBuilder.Entity<VendorType>().HasData(
+          new VendorType { Id = bakerId, Name = "Baker" },
+          new VendorType { Id = groomerId, Name = "PetGroomer" }
       );
 
-      modelBuilder.Entity<User>().HasData(
-          new User
-          {
-            Id = Guid.Parse("7e841df0-aadd-4f7c-9d74-3d5bc43dd869"),
-            TenantId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-            Username = "Stevie",
-            Email = "jar.ninja.nas@gmail.com",
-            PasswordHash = "$2a$04$WkevAwqPEYqqXCOYJ4bxReOBihf7ZfwephUTyRfjwMr43bssuzxpm", // Use a proper hashing mechanism
-            IsEmailConfirmed = true,
-            EmailConfirmationToken = "TS3dagLkwuCxiIEdTl0cQxVZ3HdcDGtWZBBwe4gm94zyjq4ZimFzdSXZvRRzGqlO",
-            Role = Domain.Enums.UserRole.Admin,
-            CreatedAt = new DateTime(2025, 6, 1, 10, 30, 45),
-            UpdatedAt = new DateTime(2025, 6, 1, 10, 30, 45)
-          }
-);
+      // Seeding GeneralInventoryItems
+      modelBuilder.Entity<GeneralInventoryItem>().HasData(
+          new GeneralInventoryItem { Id = Guid.Parse("71f2629e-25a2-4f94-a6a3-8a5241d400e6"), VendorTypeId = bakerId, Name = "Flour" },
+          new GeneralInventoryItem { Id = Guid.Parse("8b189732-d5a2-4058-a602-4b60cf005f4a"), VendorTypeId = bakerId, Name = "Sugar" },
+          new GeneralInventoryItem { Id = Guid.Parse("fdb62b10-435c-4af9-b60e-0ea935498d6d"), VendorTypeId = groomerId, Name = "Shampoo" },
+          new GeneralInventoryItem { Id = Guid.Parse("1b820d50-e679-4d00-9df9-46481a7b5e49"), VendorTypeId = groomerId, Name = "Brush" }
+      );
     }
   }
 }

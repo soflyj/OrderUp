@@ -1,5 +1,7 @@
 ﻿// File: OrderUp.API/Controllers/OrderController.cs
 using Microsoft.AspNetCore.Mvc;
+using OrderUp.Application.Dtos;
+using OrderUp.Application.DTOs;
 using OrderUp.Application.Interfaces;
 
 namespace OrderUp.API.Controllers
@@ -18,7 +20,7 @@ namespace OrderUp.API.Controllers
     }
 
     [HttpPost("place")]
-    public async Task<IActionResult> PlaceOrder([FromBody] OrderDto order)
+    public async Task<IActionResult> PlaceOrder([FromBody] CreateOrderDto order)
     {
       try
       {

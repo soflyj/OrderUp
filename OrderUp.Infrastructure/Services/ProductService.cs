@@ -18,7 +18,7 @@ public class ProductService : IProductService
     var product = new Product
     {
       Id = Guid.NewGuid(),
-      BakerId = dto.BakerId,
+      VendorId = dto.VendorId,
       Name = dto.Name,
       Description = dto.Description,
       Price = dto.Price,
@@ -28,7 +28,7 @@ public class ProductService : IProductService
 
     _context.Products.Add(product);
     await _context.SaveChangesAsync();
-    return new ProductDto { Id = product.Id, BakerId = product.BakerId, Name = product.Name, Description = product.Description, Price = product.Price };
+    return new ProductDto { Id = product.Id, VendorId = product.VendorId, Name = product.Name, Description = product.Description, Price = product.Price };
   }
 
   public async Task DeleteProductAsync(Guid id)
@@ -46,7 +46,7 @@ public class ProductService : IProductService
     return await _context.Products.Select(p => new ProductDto
     {
       Id = p.Id,
-      BakerId = p.BakerId,
+      VendorId = p.VendorId,
       Name = p.Name,
       Description = p.Description,
       Price = p.Price
@@ -57,7 +57,7 @@ public class ProductService : IProductService
   {
     var p = await _context.Products.FindAsync(id);
     if (p == null) return null;
-    return new ProductDto { Id = p.Id, BakerId = p.BakerId, Name = p.Name, Description = p.Description, Price = p.Price };
+    return new ProductDto { Id = p.Id, VendorId = p.VendorId, Name = p.Name, Description = p.Description, Price = p.Price };
   }
 
   public async Task<ProductDto> UpdateProductAsync(ProductDto dto)
@@ -73,4 +73,41 @@ public class ProductService : IProductService
     }
     return dto;
   }
+  public async Task<List<ProductDto>> GetAllProductsAsync(Guid vendorId)
+  {
+    return await _context.Products
+        .Where(p => p.VendorId == vendorId)
+        .Include(p => p.Images) // Optional: if using product images
+        .Select(p => new ProductDto
+        {
+          Id = p.Id,
+          VendorId = p.VendorId,
+          Name = p.Name,
+          Description = p.Description,
+          Price = p.Price,
+          ImageUrls = p.Images.Select(img => img.Url).ToList() // Optional
+        })
+        .ToListAsync();
+  }
+
+  public async Task<ProductDto?> GetProductByIdAsync(Guid id)
+  {
+    var product = await _context.Products
+        .Include(p => p.Images) // optional
+        .FirstOrDefaultAsync(p => p.Id == id);
+
+    if (product == null)
+      return null;
+
+    return new ProductDto
+    {
+      Id = product.Id,
+      VendorId = product.VendorId,
+      Name = product.Name,
+      Description = product.Description,
+      Price = product.Price,
+      ImageUrls = product.Images?.Select(img => img.Url).ToList() ?? new()
+    };
+  }
+
 }

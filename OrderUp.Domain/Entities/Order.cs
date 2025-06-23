@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace OrderUp.Domain.Entities;
 
-namespace OrderUp.Domain.Entities
+public class Order
 {
-  public class Order : BaseEntity
-  {
-    public Guid BakerId { get; set; }
-    public string CustomerEmail { get; set; }
-    public DateTime RequiredBy { get; set; }
-    public ICollection<OrderItem> OrderItems { get; set; }
-    public Baker Baker { get; set; }
-  }
+  public Guid Id { get; set; }
+  public Guid VendorId { get; set; }
+  public Vendor Vendor { get; set; } = null!;
+
+  public string CustomerEmail { get; set; } = null!;
+  public DateTime NeededByDate { get; set; }
+  public DateTime CreatedAt { get; set; }
+  public DateTime UpdatedAt { get; set; }
+
+  public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+  public Invoice? Invoice { get; set; }
 }

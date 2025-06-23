@@ -40,9 +40,8 @@ public class AuthController : ControllerBase
         var user = new User
         {
             Username = model.Username,
-            Email = model.Email,
-            TenantId = model.TenantId,
-            Role = model.Role,
+            Email = model.Email,            
+            //Role = model.Role,
             EmailConfirmationToken = Guid.NewGuid().ToString() // ✅ add this
         };
 
@@ -88,7 +87,6 @@ public class AuthController : ControllerBase
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim("userId", user.Id.ToString()),
-            new Claim("tenantId", user.TenantId.ToString()),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 

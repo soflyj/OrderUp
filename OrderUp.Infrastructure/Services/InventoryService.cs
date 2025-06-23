@@ -9,94 +9,82 @@ namespace OrderUp.Infrastructure.Services
 {
   public class InventoryService : IInventoryService
   {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _db;
 
-    public InventoryService(AppDbContext context)
+    public InventoryService(AppDbContext db)
     {
-      _context = context;
+      _db = db;
     }
 
-    public async Task<List<IngredientDto>> GetIngredientsAsync(Guid bakerId)
+    public async Task<List<InventoryItemDto>> GetInventoryAsync(Guid vendorId)
     {
-      return await _context.Ingredients
-          .Where(i => i.BakerId == bakerId)
-          .Select(i => new IngredientDto
+      return await _db.InventoryItems
+          .Where(i => i.VendorId == vendorId)
+          .Select(i => new InventoryItemDto
           {
             Id = i.Id,
+            VendorId = i.VendorId,
             Name = i.Name,
-            Unit = i.Unit
-          }).ToListAsync();
+            Quantity = i.Quantity,
+            Cost = i.Cost
+          })
+          .ToListAsync();
     }
 
-    public async Task AddIngredientAsync(Guid bakerId, IngredientDto dto)
+    public async Task<InventoryItemDto?> GetInventoryItemAsync(Guid vendorId, Guid itemId)
     {
-      var entity = new Ingredient
+      var item = await _db.InventoryItems
+          .FirstOrDefaultAsync(i => i.Id == itemId && i.VendorId == vendorId);
+
+      return item == null ? null : new InventoryItemDto
+      {
+        Id = item.Id,
+        VendorId = item.VendorId,
+        Name = item.Name,
+        Quantity = item.Quantity,
+        Cost = item.Cost
+      };
+    }
+
+    public async Task AddInventoryItemAsync(Guid vendorId, InventoryItemDto item)
+    {
+      var entity = new InventoryItem
       {
         Id = Guid.NewGuid(),
-        BakerId = bakerId,
-        Name = dto.Name,
-        Unit = dto.Unit
+        VendorId = vendorId,
+        Name = item.Name,
+        Quantity = item.Quantity,
+        Cost = item.Cost
       };
 
-      _context.Ingredients.Add(entity);
-      await _context.SaveChangesAsync();
+      _db.InventoryItems.Add(entity);
+      await _db.SaveChangesAsync();
     }
 
-    public async Task UpdateIngredientAsync(Guid bakerId, IngredientDto dto)
+    public async Task UpdateInventoryItemAsync(Guid vendorId, InventoryItemDto item)
     {
-      var entity = await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == dto.Id && i.BakerId == bakerId);
+      var entity = await _db.InventoryItems
+          .FirstOrDefaultAsync(i => i.Id == item.Id && i.VendorId == vendorId);
+
       if (entity != null)
       {
-        entity.Name = dto.Name;
-        entity.Unit = dto.Unit;
-        await _context.SaveChangesAsync();
+        entity.Name = item.Name;
+        entity.Quantity = item.Quantity;
+        entity.Cost = item.Cost;
+        await _db.SaveChangesAsync();
       }
     }
 
-    public async Task DeleteIngredientAsync(Guid bakerId, Guid ingredientId)
+    public async Task DeleteInventoryItemAsync(Guid vendorId, Guid itemId)
     {
-      var entity = await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == ingredientId && i.BakerId == bakerId);
-      if (entity != null)
+      var item = await _db.InventoryItems
+          .FirstOrDefaultAsync(i => i.Id == itemId && i.VendorId == vendorId);
+
+      if (item != null)
       {
-        _context.Ingredients.Remove(entity);
-        await _context.SaveChangesAsync();
+        _db.InventoryItems.Remove(item);
+        await _db.SaveChangesAsync();
       }
-    }
-
-    public async Task<List<InventoryItemDto>> GetInventoryAsync(Guid bakerId)
-    {
-      return await _context.Inventories
-          .Include(inv => inv.Ingredient)
-          .Where(inv => inv.BakerId == bakerId)
-          .Select(inv => new InventoryItemDto
-          {
-            IngredientId = inv.IngredientId,
-            Quantity = inv.Quantity
-          }).ToListAsync();
-    }
-
-    public async Task UpdateInventoryItemAsync(Guid bakerId, InventoryItemDto item)
-    {
-      var inventory = await _context.Inventories
-          .FirstOrDefaultAsync(i => i.BakerId == bakerId && i.IngredientId == item.IngredientId);
-
-      if (inventory != null)
-      {
-        inventory.Quantity = item.Quantity;
-      }
-      else
-      {
-        inventory = new Inventory
-        {
-          Id = Guid.NewGuid(),
-          BakerId = bakerId,
-          IngredientId = item.IngredientId,
-          Quantity = item.Quantity
-        };
-        _context.Inventories.Add(inventory);
-      }
-
-      await _context.SaveChangesAsync();
     }
   }
 }

@@ -6,6 +6,7 @@ using OrderUp.Application.Interfaces;
 using OrderUp.Application.Services;
 using OrderUp.Infrastructure.Persistence;
 using OrderUp.Infrastructure.Repositories;
+using OrderUp.Infrastructure.Seed;
 using OrderUp.Infrastructure.Services;
 using OrderUp.Infrastructure.Settings;
 using System.Text;
@@ -21,9 +22,11 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
 // Register services
-builder.Services.AddTransient<IAuthService, AuthService>();
-builder.Services.AddTransient<IEmailService, EmailService>();
-builder.Services.AddTransient<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // JWT authentication setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
@@ -106,4 +109,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Ensure database is migrated and seeded on startup
+using (var scope = app.Services.CreateScope())
+{
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+  db.Database.Migrate(); // Applies any pending migrations
+  await SeedData.SeedAsync(db); // Your static seeding method
+
+}
 app.Run();

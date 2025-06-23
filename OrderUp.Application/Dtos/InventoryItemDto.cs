@@ -1,10 +1,11 @@
-﻿using System;
+﻿// File: OrderUp.Application/DTOs/InventoryItemDto.cs
+namespace OrderUp.Application.DTOs;
 
-namespace OrderUp.Application.DTOs
+public class InventoryItemDto
 {
-    public class InventoryItemDto
-    {
-        public Guid IngredientId { get; set; }
-        public decimal Quantity { get; set; }
-    }
+  public Guid Id { get; set; }
+  public Guid VendorId { get; set; }
+  public string Name { get; set; } = string.Empty;
+  public int Quantity { get; set; }
+  public decimal Cost { get; set; }
 }

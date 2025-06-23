@@ -5,6 +5,6 @@ namespace OrderUp.Application.Interfaces
 {
   public interface IInvoiceService
   {
-    Task<byte[]> GenerateInvoicePdfAsync(Guid orderId, bool emailToCustomer = false);
+    Task<byte[]> GenerateInvoicePdfAsync(Guid orderId);
   }
 }
