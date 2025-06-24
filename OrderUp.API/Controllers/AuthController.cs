@@ -17,16 +17,16 @@ namespace OrderUp.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailService _emailService;
     private readonly JwtSettings _jwtSettings;
 
     public AuthController(
         IUserService userService,
-        IEmailSender emailSender,
+        IEmailService emailService,
         IOptions<JwtSettings> jwtOptions)
     {
         _userService = userService;
-        _emailSender = emailSender;
+        _emailService = emailService;
         _jwtSettings = jwtOptions.Value;
     }
 
@@ -40,16 +40,15 @@ public class AuthController : ControllerBase
         var user = new User
         {
             Username = model.Username,
-            Email = model.Email,
-            TenantId = model.TenantId,
-            Role = model.Role,
+            Email = model.Email,            
+            //Role = model.Role,
             EmailConfirmationToken = Guid.NewGuid().ToString() // ✅ add this
         };
 
         await _userService.RegisterUserAsync(user, model.Password);
 
         // Email verification (simulated)
-        await _emailSender.SendEmailAsync(model.Email, "Verify your account",
+        await _emailService.SendEmailAsync(model.Email, "Verify your account",
             "Thank you for registering. Click here to verify your email.");
 
         return Ok("User registered successfully. Verification email sent.");
@@ -74,7 +73,7 @@ public class AuthController : ControllerBase
             return BadRequest("No user found with that email.");
 
         var resetLink = $"https://yourfrontend.com/reset-password?token=dummy-token&email={user.Email}";
-        await _emailSender.SendEmailAsync(user.Email, "Reset Password", $"Reset your password: {resetLink}");
+        await _emailService.SendEmailAsync(user.Email, "Reset Password", $"Reset your password: {resetLink}");
 
         return Ok("Reset password link sent.");
     }
@@ -88,7 +87,6 @@ public class AuthController : ControllerBase
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim("userId", user.Id.ToString()),
-            new Claim("tenantId", user.TenantId.ToString()),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 

@@ -24,13 +24,6 @@ public class UserController : ControllerBase
         return user == null ? NotFound() : Ok(user);
     }
 
-    [HttpGet("tenant/{tenantId}")]
-    public async Task<IActionResult> GetByTenant(Guid tenantId)
-    {
-        var users = await _userService.GetUsersByTenantAsync(tenantId);
-        return Ok(users);
-    }
-
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, User model)
     {
