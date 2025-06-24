@@ -86,6 +86,12 @@ namespace OrderUp.Infrastructure.Persistence
           new GeneralInventoryItem { Id = Guid.Parse("fdb62b10-435c-4af9-b60e-0ea935498d6d"), VendorTypeId = groomerId, Name = "Shampoo" },
           new GeneralInventoryItem { Id = Guid.Parse("1b820d50-e679-4d00-9df9-46481a7b5e49"), VendorTypeId = groomerId, Name = "Brush" }
       );
+
+      //// Seeding inventory items
+      //modelBuilder.Entity<InventoryItem>().HasData(
+      //    new InventoryItem { Id = Guid.Parse("71f2629e-25a2-4f94-a6a3-8a5241d400e6"), VendorTypeId = bakerId, Name = "Flour" },
+      //    new InventoryItem { Id = Guid.Parse("8b189732-d5a2-4058-a602-4b60cf005f4a"), VendorTypeId = bakerId, Name = "Sugar" }
+      //);
     }
   }
 }

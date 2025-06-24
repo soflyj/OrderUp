@@ -12,5 +12,6 @@ namespace OrderUp.Application.DTOs
     /// The VendorTypeId that defines what kind of business this is (e.g. Baker, PetGroomer).
     /// </summary>
     public Guid VendorTypeId { get; set; }
+    public string Location { get; set; } = string.Empty;
   }
 }

@@ -41,8 +41,8 @@ public static class SeedData
       {
         Id = Guid.NewGuid(),
         Vendor = vendor,
-        Username = "admin",
-        Email = "admin@bakes.com",
+        FullName = "Sarah Adams",
+        Email = "sarah.adams@bakes.com",
         PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
         Role = UserRole.Admin,
         IsEmailConfirmed = true,

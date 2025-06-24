@@ -1,5 +1,5 @@
-﻿// File: OrderUp.Infrastructure/Services/VendorService.cs
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderUp.Application.Dtos;
 using OrderUp.Application.DTOs;
 using OrderUp.Application.Interfaces;
 using OrderUp.Domain.Entities;

@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
         _jwtSettings = jwtOptions.Value;
     }
 
-    [HttpPost("register")]
+    [HttpPost("sign-up")]
     public async Task<IActionResult> Register(RegisterRequest model)
     {
         var existingUser = await _userService.GetUserByEmailAsync(model.Email);
@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
 
         var user = new User
         {
-            Username = model.Username,
+            FullName = model.FullName,
             Email = model.Email,            
             //Role = model.Role,
             EmailConfirmationToken = Guid.NewGuid().ToString() // ✅ add this
@@ -65,15 +65,40 @@ public class AuthController : ControllerBase
         return Ok(new { token });
     }
 
-    [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
+    /// <summary>
+    /// This call is used to request a password reset token. The token is not returned as endpoint output. 
+    /// Instead, it’s expected that the user will receive token to reset password in email and use it for the next call.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost("request-pass")]
+    public async Task<IActionResult> RequestPassword(ForgotPasswordRequest model)
     {
         var user = await _userService.GetUserByEmailAsync(model.Email);
         if (user == null)
             return BadRequest("No user found with that email.");
 
-        var resetLink = $"https://yourfrontend.com/reset-password?token=dummy-token&email={user.Email}";
+        var hostDomain = "order.co.za";
+        var resetLink = $"https://{hostDomain}/reset-password?token=dummy-token&email={user.Email}";
         await _emailService.SendEmailAsync(user.Email, "Reset Password", $"Reset your password: {resetLink}");
+
+        return Ok("Reset password link sent.");
+    }
+
+    /// <summary>
+    /// POST method <domain>/auth/reset-pass This call is used to clear sign in information if it exists. 
+    /// In case of fully REST service which doesn’t keep such information at the backend - just return status 200.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost("reset-pass")]
+    public async Task<IActionResult> ResetPassword(ForgotPasswordRequest model)
+    {
+        var user = await _userService.GetUserByEmailAsync(model.Email);
+        if (user == null)
+            return BadRequest("No user found with that email.");
+
+        // Find out what you want to do here.
 
         return Ok("Reset password link sent.");
     }
